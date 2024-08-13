@@ -6,3 +6,4 @@ export type Order = components["schemas"]["OrderDto"];
 export type Customer = components["schemas"]["CustomerDto"];
 export type Currency = components["schemas"]["CurrencyDto"];
 export type OrderItem = components["schemas"]["OrderItemDto"];
+export type Analytics = components["schemas"]["Analytics"];

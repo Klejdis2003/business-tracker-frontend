@@ -1,21 +1,28 @@
-import {HttpClient} from "@/service/tools/http-client";
-import {Item} from "@/definitions";
-import {axiosHttpClient} from "@/service/definitions";
-import {getImageUrlFromBuffer} from "../../util/image-util";
+import { Item } from "@/type-definitions";
+import { businessApiClient } from "@/service/definitions";
+import { getImageUrlFromBuffer } from "@/util/image-util";
+import { AxiosInstance } from "axios";
 
 export class ItemService {
-    constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: AxiosInstance) {}
+  private async replaceItemUrl(item: Item) {
+    const arrayBuffer = await businessApiClient.get<ArrayBuffer>(
+      item.imageUrl,
+      {
+        responseType: "arraybuffer",
+      },
+    );
+    const fileFormat = item.imageUrl.split(".").pop();
+    item.imageUrl = getImageUrlFromBuffer(arrayBuffer.data, fileFormat!);
+  }
 
-    async getItems(): Promise<Item[]> {
-        const response = await this.httpClient.GET<Item[]>("/items");
-        if(response.data) {
-            for(const item of response.data) {
-                const arrayBuffer = await axiosHttpClient.get<ArrayBuffer>(item.imageUrl, {responseType: "arraybuffer"});
-                const fileFormat = item.imageUrl.split(".").pop();
-                item.imageUrl = getImageUrlFromBuffer(arrayBuffer.data, fileFormat!);
-            }
-            return response.data;
-        }
-        else throw new Error("An error occurred while fetching items");
-    }
+  async getItems(): Promise<Item[]> {
+    const response = await this.httpClient.get<Item[]>("/items");
+    if (response.data) {
+      for (const item of response.data) {
+        await this.replaceItemUrl(item);
+      }
+      return response.data;
+    } else throw new Error("An error occurred while fetching items");
+  }
 }
